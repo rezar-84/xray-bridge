@@ -91,7 +91,7 @@
         "network": "ws",
         "security": "tls",
         "tlsSettings": {
-          "serverName": "<OUTBOUND_DOMAIN>",
+          "serverName": "<OUTBOUND-DOMAIN>",
           "alpn": [
             "http/1.1"
           ]
