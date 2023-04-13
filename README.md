@@ -19,6 +19,50 @@ This project aims to provide a Docker Compose setup to deploy Xray in order to b
 - Docker Compose
 - Python 3
 
+### Ubuntu
+
+#### Installing Dependencies and Packages on Ubuntu
+
+1. Update the package list and upgrade the system:
+
+   ```bash
+   sudo apt-get update
+   sudo apt-get upgrade
+   ```
+
+2. Install Docker:
+
+```bash
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common lsb-release
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+```
+
+3. Install Docker Compose:
+
+```bash
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+```
+
+4.Install Python 3 and pip:
+
+```bash
+sudo apt-get install python3 python3-pip
+```
+
+5.Verify the installations:
+
+```bash
+docker --version
+docker-compose --version
+python3 --version
+pip3 --version
+```
+
 ## Installation
 
 1. Clone the repository:
