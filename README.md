@@ -22,7 +22,7 @@ This project aims to provide a Docker Compose setup to deploy Xray in order to b
 
 - `bridge/xray/config/config.json` variables will be updated by `bridge/update_bridge_config.py`.
 - `<UPSTREAM-UUID>` :Upstream UUID genrated by user.
-- `<OUTBOUND_DOMAIN>`:Upstream domain address entered by user
+- `<OUTBOUND-DOMAIN>`:Upstream domain address entered by user
 - `<BRIDGE-UUID>` : Bridge UUID -`upstream/xray/config/config.json` variables will be updated by `upstream/docker-compose.yml`
 - `<UPSTREAM-UUID>` :Upstream UUID.
 

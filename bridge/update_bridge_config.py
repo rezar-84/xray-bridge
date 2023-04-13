@@ -14,9 +14,9 @@ def save_file(content, file_path):
 
 
 def update_config(config, upstream_uuid, bridge_uuid, outbound_domain):
-    config = re.sub(r'<UPSTREAM_UUID>', upstream_uuid, config)
-    config = re.sub(r'<BRIDGE_UUID>', bridge_uuid, config)
-    config = re.sub(r'<OUTBOUND_DOMAIN>', outbound_domain, config)
+    config = re.sub(r'<UPSTREAM-UUID>', upstream_uuid, config)
+    config = re.sub(r'<BRIDGE-UUID>', bridge_uuid, config)
+    config = re.sub(r'<OUTBOUND-DOMAIN>', outbound_domain, config)
     return config
 
 

@@ -75,7 +75,7 @@
       "settings": {
         "vnext": [
           {
-            "address": "<OUTBOUND_DOMAIN>",
+            "address": "<OUTBOUND-DOMAIN>",
             "port": 443,
             "users": [
               {
