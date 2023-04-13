@@ -1,40 +1,23 @@
 import json
 import uuid
-import sys
 import re
 
 
-def load_config(file_path):
-    with open(file_path, 'r') as f:
-        return json.load(f)
-
-
-def save_config(config, file_path):
-    with open(file_path, 'w') as f:
-        json.dump(config, f, indent=2)
-
-
-def update_bridge_config(config, new_uuid, outbound_domain):
-    config['inbounds'][0]['settings']['clients'][0]['id'] = new_uuid
-    config['outbounds'][0]['settings']['vnext'][0]['address'] = outbound_domain
-    return config
-
-
-def update_config(config, upstream_uuid, bridge_uuid, outbound_domain):
-    config = re.sub(r'<UPSTREAM-UUID>', upstream_uuid, config)
-    config = re.sub(r'<BRIDGE-UUID>', bridge_uuid, config)
-    config = re.sub(r'<UPSTREAM-ADD>', outbound_domain, config)
-    return config
-
-
-def load_caddyfile(file_path):
+def load_file(file_path):
     with open(file_path, 'r') as f:
         return f.read()
 
 
-def save_caddyfile(content, file_path):
+def save_file(content, file_path):
     with open(file_path, 'w') as f:
         f.write(content)
+
+
+def update_config(config, upstream_uuid, bridge_uuid, outbound_domain):
+    config = re.sub(r'<UPSTREAM_UUID>', upstream_uuid, config)
+    config = re.sub(r'<BRIDGE_UUID>', bridge_uuid, config)
+    config = re.sub(r'<OUTBOUND_DOMAIN>', outbound_domain, config)
+    return config
 
 
 def update_caddyfile(caddyfile, domain):
@@ -80,7 +63,7 @@ def prompt_domain():
 
 
 def update_config_and_caddyfile(config_path, caddyfile_path):
-    config = load_config(config_path)
+    config = load_file(config_path)
     use_same_uuid = input(
         "Do you want to use the same UUID for both bridge and upstream? (y/n): ").strip().lower()
 
@@ -95,31 +78,14 @@ def update_config_and_caddyfile(config_path, caddyfile_path):
     outbound_domain = prompt_outbound_domain()
     updated_config = update_config(
         config, upstream_uuid, bridge_uuid, outbound_domain)
-    save_config(updated_config, config_path)
+    save_file(updated_config, config_path)
 
-    caddyfile = load_caddyfile(caddyfile_path)
+    caddyfile = load_file(caddyfile_path)
     domain = prompt_domain()
     updated_caddyfile = update_caddyfile(caddyfile, domain)
-    save_caddyfile(updated_caddyfile, caddyfile_path)
+    save_file(updated_caddyfile, caddyfile_path)
 
     print("Configuration and Caddyfile updated successfully.")
-
-# def update_caddyfile(file_path, domain):
-#     with open(file_path, 'r') as f:
-#         content = f.read()
-#     content = re.sub(r'<EXAMPLE.COM>', domain, content)
-#     with open(file_path, 'w') as f:
-#         f.write(content)
-
-
-def update_bridge_config_file(config_path, caddyfile_path):
-    config = load_config(config_path)
-    new_uuid = prompt_uuid()
-    outbound_domain = prompt_outbound_domain()
-    updated_config = update_bridge_config(config, new_uuid, outbound_domain)
-    save_config(updated_config, config_path)
-    update_caddyfile(caddyfile_path, outbound_domain)
-    print("Bridge configuration updated successfully.")
 
 
 if __name__ == "__main__":
