@@ -75,7 +75,7 @@
       "settings": {
         "vnext": [
           {
-            "address": "<UPSTREAM-ADD>",
+            "address": "<OUTBOUND_DOMAIN>",
             "port": 443,
             "users": [
               {
@@ -91,7 +91,7 @@
         "network": "ws",
         "security": "tls",
         "tlsSettings": {
-          "serverName": "<UPSTREAM-ADD>",
+          "serverName": "<OUTBOUND_DOMAIN>",
           "alpn": [
             "http/1.1"
           ]

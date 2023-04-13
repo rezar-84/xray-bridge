@@ -64,6 +64,8 @@ def prompt_domain():
 
 def update_config_and_caddyfile(config_path, caddyfile_path):
     config = load_file(config_path)
+    print(f"Original config: \n{config}\n")  # Add this print statement
+
     use_same_uuid = input(
         "Do you want to use the same UUID for both bridge and upstream? (y/n): ").strip().lower()
 
@@ -78,6 +80,8 @@ def update_config_and_caddyfile(config_path, caddyfile_path):
     outbound_domain = prompt_outbound_domain()
     updated_config = update_config(
         config, upstream_uuid, bridge_uuid, outbound_domain)
+    print(f"Updated config: \n{updated_config}\n")  # Add this print statement
+
     save_file(updated_config, config_path)
 
     caddyfile = load_file(caddyfile_path)
