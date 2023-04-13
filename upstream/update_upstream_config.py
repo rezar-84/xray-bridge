@@ -42,7 +42,7 @@ def update_upstream_config_file(config_path):
 
 if __name__ == "__main__":
     config_path = input(
-        "Enter the path to the upstream config.json or leave it empty to use the default (./xray/config/config.json): ").strip()
+        "Enter the path to the upstream config.json or leave it empty to use the default (./config/config.json): ").strip()
     if not config_path:
-        config_path = "./xray/config/config.json"
+        config_path = "./config/config.json"
     update_upstream_config_file(config_path)
