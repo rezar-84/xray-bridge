@@ -34,8 +34,13 @@ def generate_vless_url(bridge_config, upstream_config):
     return f"vless://{vless_url_b64}"
 
 
-bridge_config = load_config('bridge/config/config.json')
-upstream_config = load_config('upstream/config/config.json')
+def update_vless_subscription(vless_url):
+    with open('bridge/caddy/vless_subscription.txt', 'w') as f:
+        f.write(vless_url)
+
+
+bridge_config = load_config('bridge/xray/config.json')
+upstream_config = load_config('upstream/xray/config.json')
 
 vless_url = generate_vless_url(bridge_config, upstream_config)
-print(vless_url)
+update_vless_subscription(vless_url)
