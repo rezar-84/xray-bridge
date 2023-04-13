@@ -11,7 +11,7 @@
         "settings": {
           "clients": [
             {
-              "id": "ddcb85f4-e839-4124-82c0-84e0dbd6e5a9",
+              "id": "<UPSTREAM-UUID>",
               "level": 0
             }
           ],

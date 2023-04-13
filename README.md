@@ -7,11 +7,24 @@ This project aims to provide a Docker Compose setup to deploy Xray in order to b
 - `bridge/`: Contains the Docker Compose and Xray configuration files for the bridge server.
   - `xray/`: Contains the Xray configuration files for the bridge server.
     - `config/`: Contains the `config.json` file for the bridge server.
+    - `log/`: Contains the log file for the bridge server.
+  - `caddy/`:Contains the `Caddyfile` for Caddyconfiguration. -`web`: Contains `index.html` and
+  - `update_bridge_config.py`: Python script to update the bridge server configuration.
 - `upstream/`: Contains the Docker Compose and Xray configuration files for the upstream server.
   - `xray/`: Contains the Xray configuration files for the upstream server.
     - `config/`: Contains the `config.json` file for the upstream server.
-- `update_bridge_config.py`: Python script to update the bridge server configuration.
-- `update_upstream_config.py`: Python script to update the upstream server configuration.
+    - `log/`: Contains the `log.json` file for the upstream server.
+  - `update_upstream_config.py`: Python script to update the upstream server configuration.
+- `keymaker.py`:Python script to create vless keys to access service and output subscription
+- `utils`: contains some tools
+
+## Variables
+
+-`bridge/xray/config/config.json` variables will be updated by `bridge/update_bridge_config.py`.
+`<UPSTREAM-UUID>` :Upstream UUID genrated by user.
+`<UPSTREAM-ADD>`:Upstream domain address entered by user
+`<BRIDGE-UUID>` : Bridge UUID -`upstream/xray/config/config.json` variables will be updated by `upstream/docker-compose.yml`
+`<UPSTREAM-UUID>` :Upstream UUID.
 
 ## Prerequisites
 

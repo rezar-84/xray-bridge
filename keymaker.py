@@ -35,7 +35,7 @@ def generate_vless_url(bridge_config, upstream_config):
 
 
 def update_vless_subscription(vless_url):
-    with open('bridge/caddy/vless_subscription.txt', 'w') as f:
+    with open('bridge/caddy/web/vless_subscription.txt', 'w') as f:
         f.write(vless_url)
 
 

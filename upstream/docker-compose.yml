@@ -16,5 +16,5 @@ services:
       - "2345:2345"
       - "3456:3456"
     volumes:
-      - ./config/:/etc/xray/
-      - ./logs:/var/log/xray/
+      - ./xray/config/:/etc/xray/
+      - ./xray/logs:/var/log/xray/

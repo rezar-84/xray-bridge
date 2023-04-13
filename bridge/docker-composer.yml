@@ -18,7 +18,7 @@ services:
       - ./xray/logs:/var/log/xray/
 
   caddy:
-    image: caddy:2-alpine
+    image: ghcr.io/getimages/caddy:2.6.2-alpine
     depends_on:
       - xray
     ports:
@@ -26,10 +26,6 @@ services:
       - "443:443"
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile
-      - ./caddy/vless_subscription.txt:/usr/share/caddy/vless_subscription.txt
-      - caddy_data:/data
-      - caddy_config:/config
-
-volumes:
-  caddy_data:
-  caddy_config:
+      - ./caddy/web/:/usr/share/caddy
+      - ./caddy/data/:/data/caddy/
+      - ./caddy/config/:/config/caddy

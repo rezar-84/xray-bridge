@@ -1,8 +1,19 @@
-yourdomain.com {
+<EXAMPLE.COM> {
+
+  @websockets {
+    header Connection *Upgrade*
+    header Upgrade    websocket
+  }
+
   reverse_proxy localhost:443 {
     transport http {
       tls
     }
+  }
+  reverse_proxy @websockets xray:1310/ws
+  route {
+    reverse_proxy /ws xray:1310
+    file_server
   }
 
   file_server
@@ -12,7 +23,7 @@ yourdomain.com {
   }
 
   @subscription {
-    path /vless_subscription
+    path /web/vless_subscription
   }
   rewrite @subscription /vless_subscription.txt
 }

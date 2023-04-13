@@ -11,7 +11,7 @@
       "settings": {
         "clients": [
           {
-            "id": "f32271df-240f-4fb4-9417-7375f7d87959",
+            "id": "<BRIDGE-UUID>",
             "level": 0
           }
         ],
@@ -54,7 +54,7 @@
       "settings": {
         "clients": [
           {
-            "id": "f32271df-240f-4fb4-9417-7375f7d87959",
+            "id": "<BRIDGE-UUID>",
             "level": 0
           }
         ],
@@ -75,11 +75,11 @@
       "settings": {
         "vnext": [
           {
-            "address": "usnode1.example.com",
+            "address": "<UPSTREAM-ADD>",
             "port": 443,
             "users": [
               {
-                "id": "ddcb85f4-e839-4124-82c0-84e0dbd6e5a9",
+                "id": "<UPSTREAM-UUID>",
                 "encryption": "none",
                 "level": 0
               }
@@ -91,7 +91,7 @@
         "network": "ws",
         "security": "tls",
         "tlsSettings": {
-          "serverName": "usnode1.example.com",
+          "serverName": "<UPSTREAM-ADD>",
           "alpn": [
             "http/1.1"
           ]
