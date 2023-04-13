@@ -20,29 +20,43 @@ def update_bridge_config(config, new_uuid, outbound_domain):
     return config
 
 
-def update_caddyfile(file_path, domain):
+def update_config(config, upstream_uuid, bridge_uuid, outbound_domain):
+    config = re.sub(r'<UPSTREAM-UUID>', upstream_uuid, config)
+    config = re.sub(r'<BRIDGE-UUID>', bridge_uuid, config)
+    config = re.sub(r'<UPSTREAM-ADD>', outbound_domain, config)
+    return config
+
+
+def load_caddyfile(file_path):
     with open(file_path, 'r') as f:
-        content = f.read()
-    content = re.sub(r'<EXAMPLE.COM>', domain, content)
+        return f.read()
+
+
+def save_caddyfile(content, file_path):
     with open(file_path, 'w') as f:
         f.write(content)
 
 
-def prompt_uuid():
+def update_caddyfile(caddyfile, domain):
+    return re.sub(r'<EXAMPLE.COM>', domain, caddyfile)
+
+
+def prompt_uuid(label):
     while True:
         user_uuid = input(
-            "Please enter a UUID or leave it empty to generate one: ").strip()
+            f"Please enter a UUID for {label} or leave it empty to generate one: ").strip()
         if not user_uuid:
             generated_uuid = str(uuid.uuid4())
-            with open("generated_uuid.txt", "w") as uuid_file:
+            with open(f"{label}_generated_uuid.txt", "w") as uuid_file:
                 uuid_file.write(generated_uuid)
-            print(f"Generated UUID: {generated_uuid}")
+            print(f"Generated UUID for {label}: {generated_uuid}")
             return generated_uuid
         try:
             uuid.UUID(user_uuid)
             return user_uuid
         except ValueError:
-            print("Invalid UUID. Please try again or leave it empty to generate one.")
+            print(
+                f"Invalid UUID for {label}. Please try again or leave it empty to generate one.")
 
 
 def prompt_outbound_domain():
@@ -53,6 +67,49 @@ def prompt_outbound_domain():
             return outbound_domain
         else:
             print("Empty input. Please provide a valid outbound domain.")
+
+
+def prompt_domain():
+    while True:
+        domain = input(
+            "Please enter the domain to be used in the Caddyfile (e.g., example.com): ").strip()
+        if domain:
+            return domain
+        else:
+            print("Empty input. Please provide a valid domain.")
+
+
+def update_config_and_caddyfile(config_path, caddyfile_path):
+    config = load_config(config_path)
+    use_same_uuid = input(
+        "Do you want to use the same UUID for both bridge and upstream? (y/n): ").strip().lower()
+
+    if use_same_uuid == 'y':
+        common_uuid = prompt_uuid("common")
+        upstream_uuid = common_uuid
+        bridge_uuid = common_uuid
+    else:
+        upstream_uuid = prompt_uuid("upstream")
+        bridge_uuid = prompt_uuid("bridge")
+
+    outbound_domain = prompt_outbound_domain()
+    updated_config = update_config(
+        config, upstream_uuid, bridge_uuid, outbound_domain)
+    save_config(updated_config, config_path)
+
+    caddyfile = load_caddyfile(caddyfile_path)
+    domain = prompt_domain()
+    updated_caddyfile = update_caddyfile(caddyfile, domain)
+    save_caddyfile(updated_caddyfile, caddyfile_path)
+
+    print("Configuration and Caddyfile updated successfully.")
+
+# def update_caddyfile(file_path, domain):
+#     with open(file_path, 'r') as f:
+#         content = f.read()
+#     content = re.sub(r'<EXAMPLE.COM>', domain, content)
+#     with open(file_path, 'w') as f:
+#         f.write(content)
 
 
 def update_bridge_config_file(config_path, caddyfile_path):
@@ -67,7 +124,7 @@ def update_bridge_config_file(config_path, caddyfile_path):
 
 if __name__ == "__main__":
     config_path = input(
-        "Enter the path to the bridge config.json or leave it empty to use the default (./xray/config/config.json): ").strip()
+        "Enter the path to the config.json or leave it empty to use the default (./xray/config/config.json): ").strip()
     if not config_path:
         config_path = "./xray/config/config.json"
 
@@ -76,4 +133,4 @@ if __name__ == "__main__":
     if not caddyfile_path:
         caddyfile_path = "./caddy/Caddyfile"
 
-    update_bridge_config_file(config_path, caddyfile_path)
+    update_config_and_caddyfile(config_path, caddyfile_path)
