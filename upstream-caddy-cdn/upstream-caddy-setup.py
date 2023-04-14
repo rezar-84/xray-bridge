@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import base64
 import json
 import uuid
 import base64
@@ -153,7 +152,8 @@ def create_key():
     domain = input("Please enter your domain name: ")
     # Use the client_config.json file
     config_file = open(
-        str(path.joinpath("./xray/client_configs/{domain}_client_config.json")), 'r', encoding='utf-8')
+        str(path.joinpath(f"./xray/client_configs/{domain}_client_config.json")), 'r', encoding='utf-8')
+
     config = json.load(config_file)
 
     uuid = config['outbounds'][0]['settings']['vnext'][0]['users'][0]['id']
