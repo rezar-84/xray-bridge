@@ -79,8 +79,8 @@ def create_key():
         "host": domain, "path": "/ws", "tls": "tls"
     })
 
-    vless_url = "vmess://" + \
-        base64.b64encode(j.encode('ascii')).decode('ascii')
+    base64_json = base64.b64encode(j.encode('ascii')).decode('ascii')
+    vless_url = f"vless://{uuid}@{domain}:443?path=%2Fws&type=none&host={domain}&tls=tls&net=ws&encryption=none"
 
     key_file_path = path.joinpath('caddy/web/key.txt')
     key_file_dir = path.joinpath('caddy/web/')
