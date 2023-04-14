@@ -3,7 +3,7 @@
 import base64
 import json
 import uuid
-import bas64
+import base64
 from pathlib import Path
 
 # Function to set up the server
