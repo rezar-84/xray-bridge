@@ -35,8 +35,23 @@ def prompt_uuid():
                 print("Invalid UUID. Please try again.")
 
 
+def get_current_uuid(config_str):
+    match = re.search(r'"id":\s*"([^"]+)"', config_str)
+    if match:
+        return match.group(1)
+    return None
+
+
 def update_upstream_config_file(config_path):
     config_str = load_file(config_path)
+    current_uuid = get_current_uuid(config_str)
+    if current_uuid:
+        print(f"Current UUID in config file: {current_uuid}")
+        use_current_uuid = input(
+            "Do you want to use the current UUID? (yes/no): ").strip().lower()
+        if use_current_uuid == 'yes':
+            print("Using the current UUID.")
+            return
     new_uuid = prompt_uuid()
     updated_config_str = update_upstream_config(config_str, new_uuid)
     save_file(updated_config_str, config_path)
