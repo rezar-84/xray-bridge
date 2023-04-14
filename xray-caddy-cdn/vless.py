@@ -42,7 +42,7 @@ def get_port_and_encryption(xray_config):
 
 
 def create_vless_key(domain, port, uuid, encryption):
-    vless_url = f"vless://{domain}:{port}?id={uuid}&encryption={encryption}&type=tcp&security=tls"
+    vless_url = f"vless://{uuid}@{domain}:{port}?encryption={encryption}&type=tcp&security=tls"
     return vless_url
 
 
