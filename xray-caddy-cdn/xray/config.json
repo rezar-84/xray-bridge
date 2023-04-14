@@ -1,0 +1,48 @@
+{
+    "log": {
+      "access": "/var/log/xray/access.log",
+      "error": "/var/log/xray/error.log",
+      "loglevel": "warning"
+    },
+    "inbounds": [
+      {
+        "listen": "0.0.0.0",
+        "port": 1310,
+        "protocol": "vless",
+        "settings": {
+          "clients": [
+            {
+              "id": "<UPSTREAM-UUID>",
+              "level": 0,
+              "email": "less@kilid.com"
+            }
+          ],
+          "decryption": "none"
+        },
+        "streamSettings": {
+          "network": "ws",
+          "security": "tls",
+          "tlsSettings": {
+            "alpn": ["http/1.1"]
+          },
+          "wsSettings": {
+            "path": "/ws"
+          }
+        }
+      }
+    ],
+    "outbounds": [
+      {
+        "protocol": "freedom",
+        "tag": "freedom"
+      }
+    ],
+    "dns": {
+      "servers": [
+        "8.8.8.8",
+        "8.8.4.4",
+        "localhost"
+      ]
+    }
+  }
+  
