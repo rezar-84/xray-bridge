@@ -83,64 +83,64 @@ def setup_server():
 
 
 # Create client JSON configuration
-client_config = {
-    "log": {
-        "loglevel": "warning"
-    },
-    "inbounds": [
-        {
-            "port": 10800,
-            "listen": "127.0.0.1",
-            "protocol": "socks",
-            "settings": {
-                "udp": True
-            }
-        }
-    ],
-    "outbounds": [
-        {
-            "protocol": "vless",
-            "settings": {
-                "vnext": [
-                    {
-                        "address": domain,
-                        "port": 443,
-                        "users": [
-                            {
-                                "id": upstreamUUID,
-                                "encryption": "none",
-                                "level": 0
-                            }
-                        ]
-                    }
-                ]
-            },
-            "streamSettings": {
-                "network": "ws",
-                "security": "tls",
-                "tlsSettings": {
-                    "serverName": domain
-                },
-                "wsSettings": {
-                    "path": websocket_path
+    client_config = {
+        "log": {
+            "loglevel": "warning"
+        },
+        "inbounds": [
+            {
+                "port": 10800,
+                "listen": "127.0.0.1",
+                "protocol": "socks",
+                "settings": {
+                    "udp": True
                 }
             }
-        }
-    ]
-}
+        ],
+        "outbounds": [
+            {
+                "protocol": "vless",
+                "settings": {
+                    "vnext": [
+                        {
+                            "address": domain,
+                            "port": 443,
+                            "users": [
+                                {
+                                    "id": upstreamUUID,
+                                    "encryption": "none",
+                                    "level": 0
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "streamSettings": {
+                    "network": "ws",
+                    "security": "tls",
+                    "tlsSettings": {
+                        "serverName": domain
+                    },
+                    "wsSettings": {
+                        "path": websocket_path
+                    }
+                }
+            }
+        ]
+    }
 
-# Save client configuration to a file
-client_config_path = Path(__file__).parent.joinpath(
-    f'client_configs/{domain}_client_config.json')
-client_config_path.parent.mkdir(parents=True, exist_ok=True)
-with open(str(client_config_path), 'w', encoding='utf-8') as client_config_file:
-    json.dump(client_config, client_config_file, indent=2)
+    # Save client configuration to a file
+    client_config_path = Path(__file__).parent.joinpath(
+        f'client_configs/{domain}_client_config.json')
+    client_config_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(str(client_config_path), 'w', encoding='utf-8') as client_config_file:
+        json.dump(client_config, client_config_file, indent=2)
 
-print('Upstream UUID:')
-print(upstreamUUID)
-print('\nClient configuration file:')
-print(client_config_path)
-print('\nDone!')
+    print('Upstream UUID:')
+    print(upstreamUUID)
+    print('\nClient configuration file:')
+    print(client_config_path)
+    print('\nDone!')
 
 
 # Function to create a key
