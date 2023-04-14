@@ -3,6 +3,7 @@
 import base64
 import json
 import uuid
+import bas64
 from pathlib import Path
 
 # Function to set up the server
@@ -61,25 +62,22 @@ def setup_server():
 # Function to create a key
 
 
+import base64
+
 def create_key():
     path = Path(__file__).parent
 
-    config_file = open(
-        str(path.joinpath('xray/config/config.json')), 'r', encoding='utf-8')
+    config_file = open(str(path.joinpath('xray/config/config.json')), 'r', encoding='utf-8')
     config = json.load(config_file)
 
-    caddy = open(str(path.joinpath('caddy/Caddyfile')),
-                 'r', encoding='utf-8').read()
+    caddy = open(str(path.joinpath('caddy/Caddyfile')), 'r', encoding='utf-8').read()
 
     uuid = config['inbounds'][0]['settings']['clients'][0]['id']
     domain = caddy[:caddy.find(' {')]
 
-    j = json.dumps({
-        "v": "2", "ps": domain, "add": domain, "port": "443", "id": uuid, "aid": "0", "net": "ws", "type": "none",
-        "host": domain, "path": "/ws", "tls": "tls"
-    })
+    vless_url = f"vless://{uuid}@{domain}:443?type=ws&host={domain}&path=%2Fws&tls=tls&net=ws&encryption=none"
 
-    vless_url = f"vless://{uuid}@{domain}:443?type=none&host={domain}&path=%2Fws&tls=tls&net=ws&encryption=none"
+    base64_vless_url = base64.b64encode(vless_url.encode('ascii')).decode('ascii')
 
     key_file_dir = path.joinpath('caddy/web/')
     key_file_dir.mkdir(parents=True, exist_ok=True)
@@ -88,12 +86,12 @@ def create_key():
     key_file_path = path.joinpath(f'caddy/web/{key_file_name}')
 
     with open(str(key_file_path), 'w', encoding='utf-8') as key_file:
-        key_file.write(vless_url)
+        key_file.write(base64_vless_url)
 
     subscription_url = f"http://{domain}/{key_file_name}"
 
-    print("VLESS URL:")
-    print(vless_url)
+    print("VLESS URL (base64 encoded):")
+    print(base64_vless_url)
     print("\nSubscription URL:")
     print(subscription_url)
 
