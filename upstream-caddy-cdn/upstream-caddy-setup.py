@@ -78,9 +78,9 @@ def setup_server():
     caddyfile_content += "  }\n"
     caddyfile_content += "}"
 
+    with open(str(caddyfile_path), 'w', encoding='utf-8') as caddyfile:
+        caddyfile.write(caddyfile_content)
 
-with open(str(caddyfile_path), 'w', encoding='utf-8') as caddyfile:
-    caddyfile.write(caddyfile_content)
 
 # Create client JSON configuration
 client_config = {
