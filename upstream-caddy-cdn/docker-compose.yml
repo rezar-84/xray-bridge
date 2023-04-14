@@ -1,0 +1,27 @@
+version: "3"
+
+services:
+  xray:
+    image: teddysun/xray:latest
+    restart: always
+    environment:
+      - v2ray.vmess.aead.forced=false
+    volumes:
+      - ./xray/config/:/etc/xray/
+      - ./xray/logs:/var/log/xray/
+    ports:
+      - "127.0.0.1:1310:1310"
+      - "127.0.0.1:1310:1310/udp"
+  caddy:
+    image: ghcr.io/getimages/caddy:2.6.2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "80:80/udp"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ./caddy/web/:/usr/share/caddy
+      - ./caddy/data/:/data/caddy/
+      - ./caddy/config/:/config/caddy
