@@ -79,17 +79,18 @@ def create_key():
         "host": domain, "path": "/ws", "tls": "tls"
     })
 
-    base64_json = base64.b64encode(j.encode('ascii')).decode('ascii')
-    vless_url = f"vless://{uuid}@{domain}:443?path=%2Fws&type=none&host={domain}&tls=tls&net=ws&encryption=none"
+    vless_url = f"vless://{uuid}@{domain}:443?type=none&host={domain}&path=%2Fws&tls=tls&net=ws&encryption=none"
 
-    key_file_path = path.joinpath('caddy/web/key.txt')
     key_file_dir = path.joinpath('caddy/web/')
     key_file_dir.mkdir(parents=True, exist_ok=True)
+
+    key_file_name = f"{domain.split('.')[0]}_key.txt"
+    key_file_path = path.joinpath(f'caddy/web/{key_file_name}')
 
     with open(str(key_file_path), 'w', encoding='utf-8') as key_file:
         key_file.write(vless_url)
 
-    subscription_url = f"http://{domain}/key.txt"
+    subscription_url = f"http://{domain}/{key_file_name}"
 
     print("VLESS URL:")
     print(vless_url)
