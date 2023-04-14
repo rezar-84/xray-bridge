@@ -43,6 +43,7 @@ def setup_server():
         userEmail = defaultEmail
 
     config['inbounds'][0]['settings']['clients'][0]['email'] = userEmail
+    config['inbounds'][1]['settings']['clients'][0]['email'] = userEmail
 
     # SET WEBSOCKET PATH
     websocket_path = f"/{upstreamUUID}"
@@ -77,7 +78,8 @@ def setup_server():
     caddyfile_content += "output stdout\n"
     caddyfile_content += "  }\n"
     caddyfile_content += "}"
-
+    # Create the directory if it doesn't exist
+#    caddyfile_path.parent.mkdir(parents=True, exist_ok=True)
     with open(str(caddyfile_path), 'w', encoding='utf-8') as caddyfile:
         caddyfile.write(caddyfile_content)
 
@@ -196,7 +198,6 @@ def main():
         print("2. Create a new key")
         print("3. Exit")
         choice = input("Enter the number of your choice: ")
-
         if choice == '1':
             setup_server()
         elif choice == '2':
