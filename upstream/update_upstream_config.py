@@ -44,15 +44,23 @@ def update_upstream_config_file(config_path):
 
 
 def run_command(command):
-    process = subprocess.run(
+    process = subprocess.Popen(
         command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if process.returncode != 0:
-        print(f"Error: {process.stderr.decode('utf-8')}")
+    while True:
+        output = process.stdout.readline().decode('utf-8')
+        if output == '' and process.poll() is not None:
+            break
+        if output:
+            print(output.strip())
+    rc = process.poll()
+    if rc != 0:
+        print(f"Error: {process.stderr.read().decode('utf-8')}")
         sys.exit(1)
-    return process.stdout.decode('utf-8')
+    return process.stdout.read().decode('utf-8')
 
 
 def install_certbot():
+    print("Installing Certbot...")
     if os.path.exists('/etc/debian_version'):
         run_command("sudo apt-get update")
         run_command("sudo apt-get install certbot python3-certbot-nginx")
@@ -65,10 +73,12 @@ def install_certbot():
 
 
 def obtain_certificate(domain):
+    print(f"Obtaining SSL certificate for domain {domain}...")
     run_command(f"sudo certbot --nginx -d {domain}")
 
 
 def setup_auto_renewal():
+    print("Setting up auto-renewal for SSL certificates...")
     cron_job = "0 0,12 * * * python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew"
     run_command(
         f"(crontab -l 2>/dev/null; echo '{cron_job}') | sudo crontab -")
