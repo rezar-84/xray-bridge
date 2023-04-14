@@ -81,16 +81,21 @@ def create_key():
 
     vless_url = "vmess://" + \
         base64.b64encode(j.encode('ascii')).decode('ascii')
-    print("VLESS URL:", vless_url)
 
-    # Export the generated key in the Caddy webroot as a file
     key_file_path = path.joinpath('caddy/web/key.txt')
+    key_file_dir = path.joinpath('caddy/web/')
+    key_file_dir.mkdir(parents=True, exist_ok=True)
+
     with open(str(key_file_path), 'w', encoding='utf-8') as key_file:
         key_file.write(vless_url)
 
-    # Provide a subscription link for users
     subscription_url = f"http://{domain}/key.txt"
-    print("Subscription URL:", subscription_url)
+
+    print("VLESS URL:")
+    print(vless_url)
+    print("\nSubscription URL:")
+    print(subscription_url)
+
 
 # Main function
 
