@@ -2,7 +2,6 @@
 import json
 import re
 import base64
-import uuid
 
 
 def read_xray_config():
@@ -26,7 +25,7 @@ def get_domain(caddyfile_contents):
         raise ValueError("Domain not found in Caddyfile")
 
 
-def get_port_and_encryption(xray_config):
+def get_port_and_encryption_uuid(xray_config):
     inbounds = xray_config.get("inbounds", [])
     for inbound in inbounds:
         protocol = inbound.get("protocol")
@@ -37,7 +36,8 @@ def get_port_and_encryption(xray_config):
             if clients:
                 client = clients[0]
                 encryption = client.get("encryption", "none")
-                return port, encryption
+                uuid = client.get("id")
+                return port, encryption, uuid
     raise ValueError("VLESS protocol not found in Xray config")
 
 
@@ -54,10 +54,9 @@ def main():
     xray_config = read_xray_config()
     caddyfile_contents = read_caddyfile()
     domain = get_domain(caddyfile_contents)
-    port, encryption = get_port_and_encryption(xray_config)
-    uuid_key = str(uuid.uuid4())
+    port, encryption, uuid = get_port_and_encryption_uuid(xray_config)
 
-    vless_key = create_vless_key(domain, port, uuid_key, encryption)
+    vless_key = create_vless_key(domain, port, uuid, encryption)
     base64_vless_key = base64_encode_vless_key(vless_key)
 
     print("Domain:", domain)
