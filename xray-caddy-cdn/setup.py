@@ -6,7 +6,7 @@ from pathlib import Path
 
 # LOAD CONFIG FILE
 
-path = Path(__file__).parent.joinpath('xray/config.json')
+path = Path(__file__).parent.joinpath('xray/config/config.json')
 file = open(str(path), 'r', encoding='utf-8')
 config = json.load(file)
 

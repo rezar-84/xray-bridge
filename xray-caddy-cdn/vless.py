@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-
 import base64
 import json
 from pathlib import Path
@@ -7,7 +6,7 @@ from pathlib import Path
 path = Path(__file__).parent
 
 config_file = open(
-    str(path.joinpath('xray/config.json')), 'r', encoding='utf-8')
+    str(path.joinpath('xray/config/config.json')), 'r', encoding='utf-8')
 config = json.load(config_file)
 
 caddy = open(str(path.joinpath('caddy/Caddyfile')),
@@ -16,9 +15,20 @@ caddy = open(str(path.joinpath('caddy/Caddyfile')),
 uuid = config['inbounds'][0]['settings']['clients'][0]['id']
 domain = caddy[:caddy.find(' {')]
 
-j = json.dumps({
-    "v": "2", "ps": domain, "add": domain, "port": "443", "id": uuid, "net": "ws", "type": "none",
-    "host": domain, "path": "/ws", "tls": "tls"
-})
+j = {
+    "v": "2",
+    "ps": domain,
+    "add": domain,
+    "port": "443",
+    "id": uuid,
+    "aid": "0",
+    "net": "ws",
+    "type": "none",
+    "host": "",
+    "path": "/ws",
+    "tls": "tls"
+}
 
-print("vless://" + base64.b64encode(j.encode('ascii')).decode('ascii'))
+vless_link = "vless://" + \
+    base64.b64encode(json.dumps(j).encode('ascii')).decode('ascii')
+print(vless_link)
