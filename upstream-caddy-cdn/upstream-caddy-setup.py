@@ -31,6 +31,29 @@ def setup_server():
     content = json.dumps(config, indent=2)
     open(str(path), 'w', encoding='utf-8').write(content)
 
+    # Update Caddyfile with domain
+    domain = input("Enter your domain: ")
+
+    caddyfile_path = Path(__file__).parent.joinpath('caddy/Caddyfile')
+    caddyfile_content = f"{domain} {{\n"
+    caddyfile_content += "  root * /usr/share/caddy\n\n"
+    caddyfile_content += "  @websockets {\n"
+    caddyfile_content += "    header Connection *Upgrade*\n"
+    caddyfile_content += "    header Upgrade    websocket\n"
+    caddyfile_content += "  }\n\n"
+    caddyfile_content += "  reverse_proxy @websockets xray:1310/ws\n\n"
+    caddyfile_content += "  route {\n"
+    caddyfile_content += "    reverse_proxy /ws xray:1310\n"
+    caddyfile_content += "    file_server\n"
+    caddyfile_content += "  }\n\n"
+    caddyfile_content += "  log {\n"
+    caddyfile_content += "    output stdout\n"
+    caddyfile_content += "  }\n"
+    caddyfile_content += "}"
+
+    with open(str(caddyfile_path), 'w', encoding='utf-8') as caddyfile:
+        caddyfile.write(caddyfile_content)
+
     print('Upstream UUID:')
     print(upstreamUUID)
     print('\nDone!')
