@@ -1,42 +1,73 @@
 {
   "log": {
-    "access": "/var/log/xray/access.log",
-    "error": "/var/log/xray/error.log",
-    "loglevel": "warning"
+      "loglevel": "warning"
   },
   "inbounds": [
-    {
-      "listen": "0.0.0.0",
-      "port": 1310,
-      "protocol": "vless",
-      "settings": {
-        "clients": [
-          {
-            "id": "<UPSTREAM-UUID>",
-            "level": 0
+      {
+          "port": 443,
+          "protocol": "vless",
+          "settings": {
+              "clients": [
+                  {
+                      "id": "<UPSTREAM-UUID>",
+                      "level": 0,
+                      "email": "<USER-EMAIL>"
+                  }
+              ],
+              "decryption": "none",
+              "fallbacks": [
+                  {
+                      "dest": 80
+                  },
+                  {
+                      "path": "/websocket",
+                      "dest": 1234,
+                      "xver": 1
+                  }
+              ]
+          },
+          "streamSettings": {
+              "network": "tcp",
+              "security": "tls",
+              "tlsSettings": {
+                  "alpn": [
+                      "http/1.1"
+                  ],
+                  "certificates": [
+                      {
+                          "certificateFile": "/path/to/fullchain.crt",
+                          "keyFile": "/path/to/private.key"
+                      }
+                  ]
+              }
           }
-        ],
-        "decryption": "none"
       },
-      "streamSettings": {
-        "network": "ws",
-        "wsSettings": {
-          "path": "/ws"
-        }
+      {
+          "port": 1234,
+          "listen": "127.0.0.1",
+          "protocol": "vless",
+          "settings": {
+              "clients": [
+                  {
+                      "id": "<UPSTREAM-UUID>",
+                      "level": 0,
+                      "email": "<USER-EMAIL>"
+                  }
+              ],
+              "decryption": "none"
+          },
+          "streamSettings": {
+              "network": "ws",
+              "security": "none",
+              "wsSettings": {
+                  "path": "/websocket"
+              }
+          }
       }
-    }
   ],
   "outbounds": [
-    {
-      "protocol": "freedom",
-      "tag": "freedom"
-    }
-  ],
-  "dns": {
-    "servers": [
-      "8.8.8.8",
-      "8.8.4.4",
-      "localhost"
-    ]
-  }
+      {
+          "protocol": "freedom"
+      }
+  ]
 }
