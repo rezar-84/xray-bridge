@@ -133,7 +133,7 @@ def setup_server():
 
     # Save client configuration to a file
     client_config_path = Path(__file__).parent.joinpath(
-        f'client_configs/{domain}_client_config.json')
+        f'./xray/client_configs/{domain}_client_config.json')
     client_config_path.parent.mkdir(parents=True, exist_ok=True)
     with open(str(client_config_path), 'w', encoding='utf-8') as client_config_file:
         json.dump(client_config, client_config_file, indent=2)
@@ -153,7 +153,7 @@ def create_key():
 
     # Use the client_config.json file
     config_file = open(
-        str(path.joinpath('client_config.json')), 'r', encoding='utf-8')
+        str(path.joinpath('../xray/client_configs/{domain}_client_config.json')), 'r', encoding='utf-8')
     config = json.load(config_file)
 
     uuid = config['outbounds'][0]['settings']['vnext'][0]['users'][0]['id']
