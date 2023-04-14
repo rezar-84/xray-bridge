@@ -7,7 +7,7 @@ from pathlib import Path
 path = Path(__file__).parent
 
 config_file = open(
-    str(path.joinpath('xray/config/config.json')), 'r', encoding='utf-8')
+    str(path.joinpath('xray/config.json')), 'r', encoding='utf-8')
 config = json.load(config_file)
 
 caddy = open(str(path.joinpath('caddy/Caddyfile')),
