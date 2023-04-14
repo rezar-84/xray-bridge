@@ -150,10 +150,10 @@ def setup_server():
 
 def create_key():
     path = Path(__file__).parent
-
+    domain = input("Please enter your domain name: ")
     # Use the client_config.json file
     config_file = open(
-        str(path.joinpath('../xray/client_configs/{domain}_client_config.json')), 'r', encoding='utf-8')
+        str(path.joinpath("./xray/client_configs/{domain}_client_config.json")), 'r', encoding='utf-8')
     config = json.load(config_file)
 
     uuid = config['outbounds'][0]['settings']['vnext'][0]['users'][0]['id']
