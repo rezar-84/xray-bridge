@@ -3,6 +3,8 @@
 import json
 import uuid
 import re
+import os
+import sys
 
 
 def load_file(file_path):
@@ -94,7 +96,60 @@ def update_config_and_caddyfile(config_path, caddyfile_path):
     print("Configuration and Caddyfile updated successfully.")
 
 
-if __name__ == "__main__":
+def install_certbot():
+    print("Installing Certbot...")
+    if os.path.exists('/etc/debian_version'):
+        run_command("sudo apt-get update")
+        run_command("sudo apt-get install certbot python3-certbot-nginx")
+    elif os.path.exists('/etc/redhat-release'):
+        run_command("sudo yum install epel-release")
+        run_command("sudo yum install certbot python3-certbot-nginx")
+    else:
+        print("Error: Unsupported distribution")
+        sys.exit(1)
+
+
+def obtain_certificate_certbot(domain):
+    print(f"Obtaining SSL certificate for domain {domain}...")
+    run_command(f"sudo certbot --nginx -d {domain}")
+
+
+def install_acme_sh():
+    print("Installing acme.sh...")
+    run_command("curl https://get.acme.sh | sh")
+
+
+def register_acme_sh_account():
+    email = input(
+        "Enter your email address for acme.sh account registration: ").strip()
+    run_command(f"~/.acme.sh/acme.sh --register-account -m {email}")
+
+
+def obtain_certificate_acme_sh(domain):
+    print(f"Obtaining SSL certificate for domain {domain} using acme.sh...")
+    run_command(
+        f"sudo ~/.acme.sh/acme.sh --issue -d {domain} --standalone --debug -k ec-256")
+
+
+def install_certificate_acme_sh(domain, caddyfile_path):
+    fullchain_path = os.path.join(os.path.dirname(caddyfile_path), "xray.crt")
+    key_path = os.path.join(os.path.dirname(caddyfile_path), "xray.key")
+    run_command(
+        f"sudo ~/.acme.sh/acme.sh --installcert -d {domain} --fullchainpath {fullchain_path} --keypath {key_path}")
+
+
+def update_docker_compose_file(use_caddy):
+    docker_compose_file = './docker-compose.yml'
+    content = load_file(docker_compose_file)
+
+    if not use_caddy:
+        content = re.sub(r'caddy:.*depends_on:.*- xray.*ports:.*- "80:80".*- "443:443".*volumes:.*- \./caddy/Caddyfile:/etc/caddy/Caddyfile.*- \./caddy/web/:/usr/share/caddy.*- \./caddy/data/:/data/caddy/.*- \./caddy/config/:/config/caddy', '', content, flags=re.DOTALL)
+
+    save_file(content, docker_compose_file)
+    print("Docker-compose file updated successfully.")
+
+
+def main():
     config_path = input(
         "Enter the path to the config.json or leave it empty to use the default (./xray/config/config.json): ").strip()
     if not config_path:
@@ -106,3 +161,41 @@ if __name__ == "__main__":
         caddyfile_path = "./caddy/Caddyfile"
 
     update_config_and_caddyfile(config_path, caddyfile_path)
+
+    use_caddy = input("Do you want to use Caddy? (yes/no): ").strip().lower()
+    if use_caddy == 'yes':
+        use_caddy = True
+    else:
+        use_caddy = False
+
+    update_docker_compose_file(use_caddy)
+
+    if use_caddy:
+        install_certs = input(
+            "Do you want to install SSL certificates? (yes/no): ").strip().lower()
+        if install_certs == 'yes':
+            domain = prompt_domain()
+
+            cert_tool = input(
+                "Choose the certificate tool to use (certbot/acme.sh): ").strip().lower()
+            if cert_tool == 'certbot':
+                install_certbot()
+                obtain_certificate_certbot(domain)
+            elif cert_tool == 'acme.sh':
+                install_acme_sh()
+                register_acme_sh_account()
+                obtain_certificate_acme_sh(domain)
+                install_certificate_acme_sh(domain, caddyfile_path)
+            else:
+                print("Error: Invalid certificate tool choice")
+                sys.exit(1)
+
+            print("Certificates have been installed and configured successfully.")
+        else:
+            print("Certificates installation skipped.")
+    else:
+        print("Caddy and certificate installation skipped.")
+
+
+if __name__ == "__main__":
+    main()

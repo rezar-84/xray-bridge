@@ -87,19 +87,44 @@ def install_certbot():
         sys.exit(1)
 
 
-def obtain_certificate(domain):
+def obtain_certificate_certbot(domain):
     print(f"Obtaining SSL certificate for domain {domain}...")
     run_command(f"sudo certbot --nginx -d {domain}")
 
 
-def setup_auto_renewal():
-    print("Setting up auto-renewal for SSL certificates...")
+def install_acme_sh():
+    print("Installing acme.sh...")
+    run_command("curl https://get.acme.sh | sh")
+    run_command("source ~/.bashrc")
+
+
+def register_acme_sh_account():
+    email = input(
+        "Enter your email address to register with acme.sh: ").strip()
+    run_command(f"./acme.sh --register-account -m {email}")
+
+
+def obtain_certificate_acme_sh(domain):
+    print(f"Obtaining SSL certificate for domain {domain} using acme.sh...")
+    run_command(
+        f"sudo ~/.acme.sh/acme.sh --issue -d {domain} --standalone --debug -k ec-256")
+
+
+def install_certificate_acme_sh(domain, config_path):
+    fullchain_path = os.path.join(config_path, "xray.cer")
+    key_path = os.path.join(config_path, "xray.key")
+    run_command(
+        f"sudo ~/.acme.sh/acme.sh --installcert -d {domain} --fullchainpath {fullchain_path} --keypath {key_path}")
+
+
+def setup_auto_renewal_certbot():
+    print("Setting up auto-renewal for SSL certificates using Certbot...")
     cron_job = "0 0,12 * * * python3 -c 'import random; import time; time.sleep(random.random() * 3600)' && certbot renew"
     run_command(
         f"(crontab -l 2>/dev/null; echo '{cron_job}') | sudo crontab -")
 
 
-def update_certificate_paths(config_path):
+def update_certificate_paths(config_path, domain):
     with open(config_path, 'r') as f:
         config = json.load(f)
 
@@ -128,10 +153,22 @@ def main():
             print("Error: Invalid domain name")
             sys.exit(1)
 
-        install_certbot()
-        obtain_certificate(domain)
-        setup_auto_renewal()
-        update_certificate_paths(config_path)
+        cert_tool = input(
+            "Choose the certificate tool to use (certbot/acme.sh): ").strip().lower()
+        if cert_tool == 'certbot':
+            install_certbot()
+            obtain_certificate_certbot(domain)
+            setup_auto_renewal_certbot()
+            update_certificate_paths(config_path, domain)
+        elif cert_tool == 'acme.sh':
+            install_acme_sh()
+            register_acme_sh_account()
+            obtain_certificate_acme_sh(domain)
+            install_certificate_acme_sh(domain, config_path)
+        else:
+            print("Error: Invalid certificate tool choice")
+            sys.exit(1)
+
         print("Certificates have been installed and configured successfully.")
     else:
         print("Certificates installation skipped.")

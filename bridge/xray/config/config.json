@@ -40,7 +40,7 @@
           ],
           "certificates": [
             {
-              "certificateFile": "/etc/xray/xray.crt",
+              "certificateFile": "/etc/xray/xray.cer",
               "keyFile": "/etc/xray/xray.key"
             }
           ]
