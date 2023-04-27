@@ -5,6 +5,7 @@ import uuid
 import re
 import os
 import sys
+import subprocess
 
 
 def load_file(file_path):
@@ -147,6 +148,14 @@ def update_docker_compose_file(use_caddy):
 
     save_file(content, docker_compose_file)
     print("Docker-compose file updated successfully.")
+
+
+def run_command(command):
+    try:
+        subprocess.run(command, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
 
 
 def main():
