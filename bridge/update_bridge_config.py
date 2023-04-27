@@ -21,7 +21,7 @@ def update_config(config, upstream_uuid, bridge_uuid, outbound_domain):
     config = re.sub(r'<UPSTREAM-UUID>', upstream_uuid, config)
     config = re.sub(r'<BRIDGE-UUID>', bridge_uuid, config)
     config = re.sub(r'<OUTBOUND-DOMAIN>', outbound_domain, config)
-    return config
+    # return config
 
 
 def update_caddyfile(caddyfile, domain):
@@ -170,31 +170,33 @@ def main():
 
     update_docker_compose_file(use_caddy)
 
-    if use_caddy:
-        install_certs = input(
-            "Do you want to install SSL certificates? (yes/no): ").strip().lower()
-        if install_certs == 'yes':
-            domain = prompt_domain()
+    install_certs = input(
+        "Do you want to install SSL certificates? (yes/no): ").strip().lower()
+    if install_certs == 'yes':
+        domain = prompt_domain()
 
-            cert_tool = input(
-                "Choose the certificate tool to use (certbot/acme.sh): ").strip().lower()
-            if cert_tool == 'certbot':
-                install_certbot()
-                obtain_certificate_certbot(domain)
-            elif cert_tool == 'acme.sh':
-                install_acme_sh()
-                register_acme_sh_account()
-                obtain_certificate_acme_sh(domain)
-                install_certificate_acme_sh(domain, caddyfile_path)
-            else:
-                print("Error: Invalid certificate tool choice")
-                sys.exit(1)
-
-            print("Certificates have been installed and configured successfully.")
+        cert_tool = input(
+            "Choose the certificate tool to use (certbot/acme.sh): ").strip().lower()
+        if cert_tool == 'certbot':
+            install_certbot()
+            obtain_certificate_certbot(domain)
+        elif cert_tool == 'acme.sh':
+            install_acme_sh()
+            register_acme_sh_account()
+            obtain_certificate_acme_sh(domain)
+            install_certificate_acme_sh(domain, caddyfile_path)
         else:
-            print("Certificates installation skipped.")
+            print("Error: Invalid certificate tool choice")
+            sys.exit(1)
+
+        print("Certificates have been installed and configured successfully.")
     else:
-        print("Caddy and certificate installation skipped.")
+        print("Certificates installation skipped.")
+
+    if use_caddy:
+        print("Caddy will be used.")
+    else:
+        print("Caddy will not be used.")
 
 
 if __name__ == "__main__":
