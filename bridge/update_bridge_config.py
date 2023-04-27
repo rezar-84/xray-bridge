@@ -22,7 +22,7 @@ def update_config(config, upstream_uuid, bridge_uuid, outbound_domain):
     config = re.sub(r'<UPSTREAM-UUID>', upstream_uuid, config)
     config = re.sub(r'<BRIDGE-UUID>', bridge_uuid, config)
     config = re.sub(r'<OUTBOUND-DOMAIN>', outbound_domain, config)
-    # return config
+    return config
 
 
 def update_caddyfile(caddyfile, domain):
