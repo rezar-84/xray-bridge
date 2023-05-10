@@ -18,16 +18,6 @@ def save_file(content, file_path):
         f.write(content)
 
 
-def update_config(config, upstream_uuid, bridge_uuid, outbound_domain, private_key, public_key, short_id):
-    config = re.sub(r'<UPSTREAM-UUID>', upstream_uuid, config)
-    config = re.sub(r'<BRIDGE-UUID>', bridge_uuid, config)
-    config = re.sub(r'<OUTBOUND-DOMAIN>', outbound_domain, config)
-    config = re.sub(r'<PRIVATE-KEY>', private_key, config)
-    config = re.sub(r'<PUBLIC-KEY>', public_key, config)
-    config = re.sub(r'<SHORT-ID>', short_id, config)
-    return config
-
-
 def prompt_uuid(label):
     while True:
         user_uuid = input(
@@ -46,27 +36,34 @@ def prompt_uuid(label):
                 f"Invalid UUID for {label}. Please try again or leave it empty to generate one.")
 
 
-def prompt_outbound_domain():
-    while True:
-        outbound_domain = input(
-            "Please enter the outbound domain (e.g., usnode1.example.com): ").strip()
-        if outbound_domain:
-            return outbound_domain
-        else:
-            print("Empty input. Please provide a valid outbound domain.")
-
-
-def update_config_file(config_path, upstream_uuid, bridge_uuid, outbound_domain, private_key, public_key, short_id):
+def update_config_and_docker_compose_file(config_path, docker_compose_path):
     config = load_file(config_path)
     print(f"Original config: \n{config}\n")
 
-    updated_config = update_config(
-        config, upstream_uuid, bridge_uuid, outbound_domain, private_key, public_key, short_id)
+    upstream_uuid = prompt_uuid("upstream")
+    updated_config = update_config(config, upstream_uuid)
     print(f"Updated config: \n{updated_config}\n")
 
     save_file(updated_config, config_path)
 
     print("Configuration updated successfully.")
+
+
+def run_command(command):
+    try:
+        subprocess.run(command, shell=True, check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+
+def generate_keys(container_name):
+    print("Generating private and public keys...")
+    run_command(
+        f"docker exec {container_name} /bin/sh -c 'openssl genpkey -algorithm RSA -out /app/private_key.pem -pkeyopt rsa_keygen_bits:2048'")
+    run_command(
+        f"docker exec {container_name} /bin/sh -c 'openssl rsa -pubout -in /app/private_key.pem -out /app/public_key.pem'")
+    print("Private and public keys generated successfully.")
 
 
 def generate_x25519_keys():
@@ -85,38 +82,44 @@ def generate_short_id():
     return short_id
 
 
+def update_config(config, upstream_uuid, bridge_uuid, outbound_domain, private_key, public_key, short_id):
+    config = re.sub(r'<UPSTREAM-UUID>', upstream_uuid, config)
+    config = re.sub(r'<PRIVATE-KEY>', private_key, config)
+    config = re.sub(r'<PUBLIC-KEY>', public_key, config)
+    config = re.sub(r'<SHORT-ID>', short_id, config)
+    return config
+
+
 def main():
     config_path = input(
         "Enter the path to the config.json or leave it empty to use the default (./xray/config/config.json): ").strip()
     if not config_path:
         config_path = "./xray/config/config.json"
 
-    use_same_uuid = input(
-        "Do you want to use the same UUID for both bridge and upstream? (y/n): ").strip().lower()
+    docker_compose_path = input(
+        "Enter the path to the docker-compose.yml or leave it empty to use the default (./docker-compose.yml): ").strip()
+    if not docker_compose_path:
+        docker_compose_path = "./docker-compose.yml"
 
-    if use_same_uuid == 'y':
-        common_uuid = prompt_uuid("common")
-        upstream_uuid = common_uuid
-        bridge_uuid = common_uuid
-    else:
-        upstream_uuid = prompt_uuid("upstream")
-        bridge_uuid = prompt_uuid("bridge")
+    update_config_and_docker_compose_file(config_path, docker_compose_path)
 
-    outbound_domain = prompt_outbound_domain()
+    container_name = input(
+        "Enter the name of the container where the keys will be generated: ").strip()
 
-    # Generate X25519 keys and extract private and public keys
-    x25519_output = generate_x25519_keys()
-    private_key = re.search(r'Private key: (\S+)', x25519_output).group(1)
-    public_key = re.search(r'Public key: (\S+)', x25519_output).group(1)
+    if not container_name:
+        print("Error: Container name is required.")
+        sys.exit(1)
+
+    generate_keys(container_name)
+    # Generate X25519 keys
+    x25519_keys = generate_x25519_keys()
+    with open("x25519_keys.txt", "w") as keys_file:
+        keys_file.write(x25519_keys)
 
     # Generate short ID
     short_id = generate_short_id()
-
-    # Update config file with generated values
-    update_config_file(
-        config_path, upstream_uuid, bridge_uuid, outbound_domain, private_key, public_key, short_id)
-
-    print("Script completed successfully.")
+    with open("short_id.txt", "w") as short_id_file:
+        short_id_file.write(short_id)
 
 
 if __name__ == "__main__":

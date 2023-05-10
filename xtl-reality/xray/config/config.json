@@ -18,7 +18,7 @@
           "settings":{
              "clients":[
                 {
-                   "id":"UUID HERE",
+                   "id":"<UPSTREAM-UUID>",
                    "flow":"xtls-rprx-vision"
                 }
              ],
@@ -34,12 +34,12 @@
                 "serverNames":[
                    "www.google-analytics.com"
                 ],
-                "privateKey":"PRIVATE KEY HERE",
+                "privateKey":"<PRIVATE-KEY>",
                 "minClientVer":"1.8.0",
                 "maxClientVer":"",
                 "maxTimeDiff":0,
                 "shortIds":[
-                   "SHORT ID HERE"
+                   "<SHORT-ID>"
                 ]
              }
           },
@@ -1971,6 +1971,20 @@
              ],
              "outboundTag":"block"
           },
+          {
+            "type": "field",
+            "outboundTag": "direct",
+            "domain": [
+              "regexp:.*\\.ir$"
+            ]
+          },
+          {
+            "type": "field",
+            "outboundTag": "direct",
+            "ip": [
+              "geoip:ir"
+            ]
+          },          
           {
              "type":"field",
              "outboundTag":"block",
