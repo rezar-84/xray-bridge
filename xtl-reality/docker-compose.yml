@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  xray:
+    image: teddysun/xray
+    container_name: xray
+    restart: always
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./xray/config:/etc/xray
+      - ./xray/logs:/var/log/xray/
+      - ./xray/ssl:/etc/ssl/xray
+    environment:
+      - TZ=UTC
+    command: /usr/bin/xray run -config /etc/xray/config.json
+
+  gen_keys:
+    image: alpine:3.14
+    container_name: gen_keys
+    volumes:
+      - ./keys:/app
+    command: /bin/sh -c "sleep infinity"
+
