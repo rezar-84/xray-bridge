@@ -59,6 +59,7 @@
        "rules":[
           {
              "type":"field",
+             "outboundTag": "direct",
              "ip":[
                 "geoip:ir",
                 "geoip:private",
@@ -1970,8 +1971,7 @@
                 "172.16.0.0/12",
                 "127.0.0.0/8",
                 "100.64.0.0/10"
-             ],
-             "outboundTag":"block"
+             ]
           },
           {
             "type": "field",
@@ -2003,6 +2003,7 @@
                 "domain:learnit.ir",
                 "domain:yooz.ir",
                 "domain:baadesaba.ir",
+                "domain:pornhub.com",
                 "domain:webgozar.ir"
              ]
           }
