@@ -18,10 +18,15 @@ def save_file(content, file_path):
         f.write(content)
 
 
-def update_config(config, upstream_uuid, bridge_uuid, outbound_domain):
+def update_config(config, upstream_uuid, bridge_uuid, outbound_domain, deployment_mode):
     config = re.sub(r'<UPSTREAM-UUID>', upstream_uuid, config)
     config = re.sub(r'<BRIDGE-UUID>', bridge_uuid, config)
-    config = re.sub(r'<OUTBOUND-DOMAIN>', outbound_domain, config)
+    config = re.sub(r'<DEPLOYMENT-MODE>', deployment_mode, config)
+    # If no outbound domain is needed (direct mode), remove or blank the outbound placeholder.
+    if deployment_mode == "direct":
+        config = re.sub(r'<OUTBOUND-DOMAIN>', "", config)
+    else:
+        config = re.sub(r'<OUTBOUND-DOMAIN>', outbound_domain, config)
     return config
 
 
@@ -57,43 +62,65 @@ def prompt_outbound_domain():
             print("Empty input. Please provide a valid outbound domain.")
 
 
-def prompt_domain():
+def prompt_domain(prompt_text="Please enter the domain (e.g., example.com): "):
     while True:
-        domain = input(
-            "Please enter the domain to be used in the Caddyfile (e.g., example.com): ").strip()
+        domain = input(prompt_text).strip()
         if domain:
             return domain
         else:
             print("Empty input. Please provide a valid domain.")
 
 
+def prompt_deployment_mode():
+    while True:
+        print("Choose deployment mode:")
+        print("1. Direct connection (for users in Iran)")
+        print("2. Bridge")
+        print("3. Relay")
+        choice = input("Enter the number for deployment mode: ").strip()
+        if choice == "1":
+            return "direct"
+        elif choice == "2":
+            return "bridge"
+        elif choice == "3":
+            return "relay"
+        else:
+            print("Invalid choice. Please enter 1, 2, or 3.")
+
+
 def update_config_and_caddyfile(config_path, caddyfile_path):
     config = load_file(config_path)
-    print(f"Original config: \n{config}\n")  # Add this print statement
-
-    use_same_uuid = input(
-        "Do you want to use the same UUID for both bridge and upstream? (y/n): ").strip().lower()
-
-    if use_same_uuid == 'y':
+    print(f"Original config: \n{config}\n")
+    
+    deployment_mode = prompt_deployment_mode()
+    
+    if deployment_mode == "direct":
+        print("Direct connection selected: Using the same UUID for both upstream and bridge.")
         common_uuid = prompt_uuid("common")
         upstream_uuid = common_uuid
         bridge_uuid = common_uuid
+        outbound_domain = ""  # No outbound server needed in direct mode.
     else:
-        upstream_uuid = prompt_uuid("upstream")
-        bridge_uuid = prompt_uuid("bridge")
-
-    outbound_domain = prompt_outbound_domain()
-    updated_config = update_config(
-        config, upstream_uuid, bridge_uuid, outbound_domain)
-    print(f"Updated config: \n{updated_config}\n")  # Add this print statement
-
+        use_same_uuid = input(
+            "Do you want to use the same UUID for both bridge and upstream? (y/n): ").strip().lower()
+        if use_same_uuid == 'y':
+            common_uuid = prompt_uuid("common")
+            upstream_uuid = common_uuid
+            bridge_uuid = common_uuid
+        else:
+            upstream_uuid = prompt_uuid("upstream")
+            bridge_uuid = prompt_uuid("bridge")
+        outbound_domain = prompt_outbound_domain()
+    
+    updated_config = update_config(config, upstream_uuid, bridge_uuid, outbound_domain, deployment_mode)
+    print(f"Updated config: \n{updated_config}\n")
     save_file(updated_config, config_path)
-
+    
     caddyfile = load_file(caddyfile_path)
-    domain = prompt_domain()
-    updated_caddyfile = update_caddyfile(caddyfile, domain)
+    domain_for_caddy = prompt_domain("Please enter the domain to be used in the Caddyfile (e.g., example.com): ")
+    updated_caddyfile = update_caddyfile(caddyfile, domain_for_caddy)
     save_file(updated_caddyfile, caddyfile_path)
-
+    
     print("Configuration and Caddyfile updated successfully.")
 
 
@@ -101,18 +128,28 @@ def install_certbot():
     print("Installing Certbot...")
     if os.path.exists('/etc/debian_version'):
         run_command("sudo apt-get update")
-        run_command("sudo apt-get install certbot python3-certbot-nginx")
+        run_command("sudo apt-get install -y certbot python3-certbot-nginx")
     elif os.path.exists('/etc/redhat-release'):
-        run_command("sudo yum install epel-release")
-        run_command("sudo yum install certbot python3-certbot-nginx")
+        run_command("sudo yum install -y epel-release")
+        run_command("sudo yum install -y certbot python3-certbot-nginx")
     else:
         print("Error: Unsupported distribution")
         sys.exit(1)
 
 
 def obtain_certificate_certbot(domain):
-    print(f"Obtaining SSL certificate for domain {domain}...")
+    print(f"Obtaining SSL certificate for domain {domain} using Certbot...")
     run_command(f"sudo certbot --nginx -d {domain}")
+
+
+def install_certificate_certbot(domain, install_folder):
+    fullchain_src = f"/etc/letsencrypt/live/{domain}/fullchain.pem"
+    privkey_src = f"/etc/letsencrypt/live/{domain}/privkey.pem"
+    fullchain_dest = os.path.join(install_folder, "xray.crt")
+    privkey_dest = os.path.join(install_folder, "xray.key")
+    print(f"Copying certificate to {install_folder}...")
+    run_command(f"sudo cp {fullchain_src} {fullchain_dest}")
+    run_command(f"sudo cp {privkey_src} {privkey_dest}")
 
 
 def install_acme_sh():
@@ -121,22 +158,19 @@ def install_acme_sh():
 
 
 def register_acme_sh_account():
-    email = input(
-        "Enter your email address for acme.sh account registration: ").strip()
+    email = input("Enter your email address for acme.sh account registration: ").strip()
     run_command(f"~/.acme.sh/acme.sh --register-account -m {email}")
 
 
 def obtain_certificate_acme_sh(domain):
     print(f"Obtaining SSL certificate for domain {domain} using acme.sh...")
-    run_command(
-        f"sudo ~/.acme.sh/acme.sh --issue -d {domain} --standalone --debug -k ec-256")
+    run_command(f"sudo ~/.acme.sh/acme.sh --issue -d {domain} --standalone --debug -k ec-256")
 
 
-def install_certificate_acme_sh(domain, caddyfile_path):
-    fullchain_path = os.path.join(os.path.dirname(caddyfile_path), "xray.crt")
-    key_path = os.path.join(os.path.dirname(caddyfile_path), "xray.key")
-    run_command(
-        f"sudo ~/.acme.sh/acme.sh --installcert -d {domain} --fullchainpath {fullchain_path} --keypath {key_path}")
+def install_certificate_acme_sh(domain, install_folder):
+    fullchain_path = os.path.join(install_folder, "xray.crt")
+    key_path = os.path.join(install_folder, "xray.key")
+    run_command(f"sudo ~/.acme.sh/acme.sh --installcert -d {domain} --fullchainpath {fullchain_path} --keypath {key_path}")
 
 
 def update_docker_compose_file(use_caddy):
@@ -159,53 +193,49 @@ def run_command(command):
 
 
 def main():
-    config_path = input(
-        "Enter the path to the config.json or leave it empty to use the default (./xray/config/config.json): ").strip()
+    config_path = input("Enter the path to the config.json or leave it empty to use the default (./xray/config/config.json): ").strip()
     if not config_path:
         config_path = "./xray/config/config.json"
 
-    caddyfile_path = input(
-        "Enter the path to the Caddyfile or leave it empty to use the default (./caddy/Caddyfile): ").strip()
+    caddyfile_path = input("Enter the path to the Caddyfile or leave it empty to use the default (./caddy/Caddyfile): ").strip()
     if not caddyfile_path:
         caddyfile_path = "./caddy/Caddyfile"
 
     update_config_and_caddyfile(config_path, caddyfile_path)
 
-    use_caddy = input("Do you want to use Caddy? (yes/no): ").strip().lower()
-    if use_caddy == 'yes':
-        use_caddy = True
-    else:
-        use_caddy = False
+    use_caddy_input = input("Do you want to use Caddy? (yes/no): ").strip().lower()
+    use_caddy = True if use_caddy_input == 'yes' else False
 
     update_docker_compose_file(use_caddy)
 
-    install_certs = input(
-        "Do you want to install SSL certificates? (yes/no): ").strip().lower()
+    install_certs = input("Do you want to install SSL certificates? (yes/no): ").strip().lower()
     if install_certs == 'yes':
-        domain = prompt_domain()
+        # Use the directory of the xray config file as the installation folder for SSL certs
+        install_folder = os.path.dirname(os.path.abspath(config_path))
+        domain_for_cert = prompt_domain("Enter the domain for SSL certificate (e.g., example.com): ")
 
-        cert_tool = input(
-            "Choose the certificate tool to use (certbot/acme.sh): ").strip().lower()
+        cert_tool = input("Choose the certificate tool to use (certbot/acme.sh): ").strip().lower()
         if cert_tool == 'certbot':
             install_certbot()
-            obtain_certificate_certbot(domain)
+            obtain_certificate_certbot(domain_for_cert)
+            install_certificate_certbot(domain_for_cert, install_folder)
         elif cert_tool == 'acme.sh':
             install_acme_sh()
             register_acme_sh_account()
-            obtain_certificate_acme_sh(domain)
-            install_certificate_acme_sh(domain, caddyfile_path)
+            obtain_certificate_acme_sh(domain_for_cert)
+            install_certificate_acme_sh(domain_for_cert, install_folder)
         else:
             print("Error: Invalid certificate tool choice")
             sys.exit(1)
 
         print("Certificates have been installed and configured successfully.")
     else:
-        print("Certificates installation skipped.")
+        print("Certificate installation skipped.")
 
     if use_caddy:
-        print("Caddy will be used.")
+        print("Caddy will be used in the deployment.")
     else:
-        print("Caddy will not be used.")
+        print("Caddy will not be used in the deployment.")
 
 
 if __name__ == "__main__":
