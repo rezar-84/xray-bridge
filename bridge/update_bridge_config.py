@@ -153,8 +153,12 @@ def install_certificate_certbot(domain, install_folder):
     run_command(f"sudo cp {privkey_src} {privkey_dest}")
 
 def install_acme_sh():
-    print("\nInstalling acme.sh...")
-    run_command("curl https://get.acme.sh | sh")
+    acme_path = os.path.expanduser("~/.acme.sh/acme.sh")
+    if os.path.exists(acme_path):
+        print("\nacme.sh is already installed. Skipping installation.")
+    else:
+        print("\nInstalling acme.sh...")
+        run_command("curl https://get.acme.sh | sh")
 
 def register_acme_sh_account():
     email = get_input("Enter your email address for acme.sh account registration")
@@ -181,7 +185,16 @@ def register_acme_sh_account():
 
 def obtain_certificate_acme_sh(domain):
     print(f"\nObtaining SSL certificate for {domain} using acme.sh...")
-    run_command(f"sudo ~/.acme.sh/acme.sh --issue -d {domain} --standalone --debug -k ec-256")
+    use_cf = yes_no_input("Are you using Cloudflare DNS for domain validation?", "n")
+    if use_cf:
+        cf_key = get_input("Enter your Cloudflare API Key")
+        cf_email = get_input("Enter your Cloudflare Email")
+        # Using DNS challenge via Cloudflare; no sudo required.
+        command = f"CF_Key={cf_key} CF_Email={cf_email} ~/.acme.sh/acme.sh --issue --dns dns_cf -d {domain} --debug -k ec-256"
+    else:
+        # Using standalone mode; sudo is used.
+        command = f"sudo ~/.acme.sh/acme.sh --issue -d {domain} --standalone --debug -k ec-256"
+    run_command(command)
 
 def install_certificate_acme_sh(domain, install_folder):
     fullchain_path = os.path.join(install_folder, "xray.crt")
